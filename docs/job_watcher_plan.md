@@ -1,4 +1,4 @@
-<!-- Last edited: 2026-09-13 12:40 CDT -->
+<!-- Last edited: 2026-09-13 13:28 CDT -->
 
 # job-watcher — internship posting alerts on your phone
 
@@ -163,7 +163,7 @@ Special messages: `job-watcher armed, tracking N listings` (bootstrap), `job-wat
 - Repo: `JacquesAttinger/job-watcher`, default branch `main`.
 - Environment: new cloud environment `job-watcher`, network **Custom** with `ntfy.sh` and `hc-ping.com`, **Also include default list** checked. Environment variables `NTFY_TOPIC`, `HC_PING_URL`.
 - Model: Sonnet 5. Connectors: none.
-- Schedule: preset Hourly, then `/schedule update` to cron `23 0-1,7-23 * * *` (Central). Confirm the reported next-run time.
+- Schedule: cron `23 0-6,12-23 * * *` **UTC** = 7:23am–1:23am Central during CDT (6:23am–12:23am during CST). Routine id `trig_01LMatVbuiXQhSxWRr54FC9w`, environment `env_01YGdptcimZebJ5wbBCqfEq6`.
 - Prompt (`routine/PROMPT.md`, self-contained):
   1. If the `routine-fire-payload` block contains the word `test`, run `python -m watcher.cli test` and stop.
   2. Run `python -m watcher.cli scan`.
@@ -173,9 +173,11 @@ Special messages: `job-watcher armed, tracking N listings` (bootstrap), `job-wat
 
 ### healthchecks.io
 
-One check `job-watcher`, schedule type **cron** `23 0-1,7-23 * * *`, timezone `America/Chicago`, grace 45 min.
+One check `job-watcher`, schedule type **cron** `23 0-6,12-23 * * *`, timezone **UTC**, grace 45 min.
+It is the same UTC cron the routine uses, so DST can never desync the two.
 Integration: ntfy → same topic.
-The 1am–7am gap is expected by the cron schedule, so no false alarms overnight.
+The overnight gap is part of the cron schedule, so no false alarms overnight.
+Ping URL: `https://hc-ping.com/072027a2-86b7-401c-9a61-7d3dff93f246`.
 
 ## Implementation steps
 

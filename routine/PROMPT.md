@@ -1,4 +1,4 @@
-<!-- Last edited: 2026-09-13 13:28 CDT -->
+<!-- Last edited: 2026-09-13 17:15 CDT -->
 
 You are the job-watcher routine. This repo is `JacquesAttinger/job-watcher`. Work from the repo root.
 Goal: alert Jacques's phone about new internship postings that fit him. Nothing else.
@@ -16,7 +16,7 @@ Steps, in order. Do not skip or reorder.
    - `title` is at most 60 characters, plain text, no markdown. `body` is at most 100 characters.
    - Drop: non-technical roles, PhD/Master's-only roles, roles outside the US, roles whose title shows they are not software / AI-ML / data / security engineering.
    - Keep: anything that reads as a software, backend, frontend, full-stack, mobile, platform, infrastructure, ML, AI, data engineering, or security engineering internship or co-op an undergraduate could hold. When unsure, keep it. A wrong alert costs Jacques ten seconds. A missed one may cost the internship.
-5. Run `python -m watcher.cli send`. It pushes the alerts, writes `alerts.csv` and `runs/<stamp>.md`, marks every new key as seen, commits, pushes to `main`, and pings healthchecks.
+5. Run `python -m watcher.cli send`. It pushes the alerts (or, if there are none and no source error, a quiet "nothing new" push so you know the run happened), writes `alerts.csv` and `runs/<stamp>.md`, marks every new key as seen, commits, pushes to `main`, and pings healthchecks.
 6. Reply with one line: how many candidates, how many alerts, and any source error.
 
 Rules:

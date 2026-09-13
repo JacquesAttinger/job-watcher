@@ -1,4 +1,4 @@
-# Last edited: 2026-09-13 12:48 CDT
+# Last edited: 2026-09-13 17:15 CDT
 import json
 
 import pytest
@@ -27,7 +27,7 @@ def test_second_run_finds_nothing_new(fake_fetch, isolated_state, sent):
     pending = state.read_pending()
     assert pending["new_keys"] == [] and pending["candidates"] == []
     cli.cmd_send(_args())
-    assert sent == []
+    assert len(sent) == 1 and sent[0]["title"] == "job-watcher: nothing new"
 
 
 def test_new_posting_flows_to_candidates_then_alert(fake_fetch, isolated_state, sent):

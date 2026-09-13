@@ -1,4 +1,4 @@
-# Last edited: 2026-09-13 12:48 CDT
+# Last edited: 2026-09-13 17:15 CDT
 """Command line entry point: `python -m watcher.cli {scan|send|seed|test}`.
 
 scan  fetch feeds, diff against state/seen.json, apply hard exclusions,
@@ -128,6 +128,14 @@ def _send(args: argparse.Namespace) -> int:
                 "review pending.json first so nothing gets marked seen without a verdict"
             )
         alerted = _push_alerts(stamp, pending, decisions, dry)
+        if not alerted and not pending["source_errors"]:
+            notify.publish(
+                "job-watcher: nothing new",
+                f"run {stamp}: no new postings this pass.",
+                priority=1,
+                tags=["zzz"],
+                dry_run=dry,
+            )
 
     error_pushes = _push_source_errors(pending, dry)
     if dry:

@@ -156,7 +156,7 @@ POST https://ntfy.sh
  "click": "https://...", "tags": ["briefcase"], "priority": 3}
 ```
 
-Special messages: `job-watcher armed, tracking N listings` (bootstrap), `job-watcher test OK` (test mode), `job-watcher: <source> failed: <reason>` (error, priority 4), `job-watcher is silent` (from healthchecks.io).
+Special messages: `job-watcher armed, tracking N listings` (bootstrap), `job-watcher: nothing new` (a run with no alerts and no source error, priority 1), `job-watcher test OK` (test mode), `job-watcher: <source> failed: <reason>` (error, priority 4), `job-watcher is silent` (from healthchecks.io).
 
 ### Routine configuration
 

@@ -1,4 +1,4 @@
-# Last edited: 2026-09-13 12:48 CDT
+# Last edited: 2026-09-15 16:25 CDT
 """Outbound signals: ntfy.sh pushes and healthchecks.io pings.
 
 Secrets come from the environment (cloud) or a local .env (never committed):
@@ -10,12 +10,24 @@ from __future__ import annotations
 
 import json
 import os
+import sys
+import time
+import urllib.error
 import urllib.request
 
 from .state import REPO_ROOT
 
 NTFY_ENDPOINT = "https://ntfy.sh"
 ENV_PATH = REPO_ROOT / ".env"
+
+# ntfy.sh rate-limits anonymous publishes per source IP with a small burst
+# allowance, so real POSTs are spaced out and a 429 is retried with backoff.
+PUBLISH_INTERVAL = 1.0  # seconds between consecutive real POSTs
+RETRY_ATTEMPTS = 3  # total attempts per message on HTTP 429
+RETRY_DEFAULT_WAIT = 2.0  # seconds to wait when 429 carries no Retry-After
+RETRY_MAX_WAIT = 10.0  # cap on an honoured Retry-After
+
+_last_post = 0.0
 
 
 def load_env() -> None:
@@ -68,8 +80,41 @@ def publish(
     request = urllib.request.Request(
         NTFY_ENDPOINT, data=body, headers={"Content-Type": "application/json"}, method="POST"
     )
+    for attempt in range(1, RETRY_ATTEMPTS):
+        try:
+            return _post(request)
+        except urllib.error.HTTPError as exc:
+            if exc.code != 429:
+                raise
+            wait = _retry_wait(exc)
+            print(f"ntfy 429 on attempt {attempt}/{RETRY_ATTEMPTS}, retrying in {wait:.1f}s", file=sys.stderr)
+            time.sleep(wait)
+    return _post(request)  # last attempt: any error propagates to the caller
+
+
+def _post(request: urllib.request.Request) -> bool:
+    _pace()
     with urllib.request.urlopen(request, timeout=30) as response:
         return 200 <= response.status < 300
+
+
+def _pace() -> None:
+    """Sleep so consecutive real POSTs are at least PUBLISH_INTERVAL apart."""
+    global _last_post
+    remaining = PUBLISH_INTERVAL - (time.monotonic() - _last_post)
+    if remaining > 0:
+        time.sleep(remaining)
+    _last_post = time.monotonic()
+
+
+def _retry_wait(exc: urllib.error.HTTPError) -> float:
+    """Honour a numeric Retry-After header (capped), else use the default wait."""
+    header = exc.headers.get("Retry-After") if exc.headers else None
+    try:
+        seconds = float(header) if header else RETRY_DEFAULT_WAIT
+    except ValueError:  # HTTP-date form; not worth parsing for a 2s default
+        seconds = RETRY_DEFAULT_WAIT
+    return min(max(seconds, 0.0), RETRY_MAX_WAIT)
 
 
 def ping_healthcheck(kind: str = "", dry_run: bool = False) -> None:

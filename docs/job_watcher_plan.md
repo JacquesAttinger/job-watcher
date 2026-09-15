@@ -1,4 +1,4 @@
-<!-- Last edited: 2026-09-13 13:28 CDT -->
+<!-- Last edited: 2026-09-15 16:45 CDT -->
 
 # job-watcher — internship posting alerts on your phone
 
@@ -157,6 +157,10 @@ POST https://ntfy.sh
 ```
 
 Special messages: `job-watcher armed, tracking N listings` (bootstrap), `job-watcher: nothing new` (a run with no alerts and no source error, priority 1), `job-watcher test OK` (test mode), `job-watcher: <source> failed: <reason>` (error, priority 4), `job-watcher is silent` (from healthchecks.io).
+
+Rate limits (added 2026-09-15 after two `send` runs died on HTTP 429): ntfy.sh limits anonymous publishes per source IP with a small burst allowance.
+`notify.publish` spaces real POSTs at least 1 s apart (`PUBLISH_INTERVAL`) and retries a 429 up to 3 attempts in total (`RETRY_ATTEMPTS`), waiting for `Retry-After` when ntfy sends one (capped at 10 s) and 2 s otherwise.
+Any other HTTP error, or a 429 that survives every retry, still raises, so `send` aborts, pings `$HC_PING_URL/fail`, and leaves `seen.json` untouched for the next run.
 
 ### Routine configuration
 

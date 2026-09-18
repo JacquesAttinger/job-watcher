@@ -1,7 +1,7 @@
-# Last edited: 2026-09-13 12:48 CDT
-"""Fetch and normalize the three internship lists. One parser per source.
+# Last edited: 2026-09-18 21:10 CDT
+"""Fetch and normalize the internship lists. One parser per source.
 
-All three feeds are plain files on raw.githubusercontent.com, which is on the
+All feeds are plain files on raw.githubusercontent.com, which is on the
 cloud environment's default allowlist. No HTML scraping.
 """
 
@@ -24,9 +24,12 @@ ZSHAH_URL = (
 JOBRIGHT_URL = (
     "https://raw.githubusercontent.com/jobright-ai/2026-Software-Engineer-Internship/master/README.md"
 )
+SPEEDYAPPLY_URL = "https://raw.githubusercontent.com/speedyapply/2027-SWE-College-Jobs/main/README.md"
+CHIELER_URL = "https://raw.githubusercontent.com/Chieler/Summer-2027-SWE-Internships/main/README.md"
+APPLYGUY_URL = "https://raw.githubusercontent.com/ApplyGuy/2027-Internships/main/data/internships.json"
 
 USER_AGENT = "job-watcher/1.0 (+https://github.com/JacquesAttinger/job-watcher)"
-UNSTATED_TERMS = {"", "n/a", "not stated", "none", "null"}
+UNSTATED_TERMS = {"", "n/a", "not stated", "not specified", "none", "null"}
 
 
 def fetch_text(url: str, timeout: int = 90) -> str:
@@ -122,10 +125,108 @@ def parse_jobright(text: str) -> list[Posting]:
     return postings
 
 
+# | <a href="url"><strong>Co</strong></a> | Title | Location | [$Salary |] <a href="apply_url">...</a> | Age |
+# The Quant/FAANG tables carry a salary column the Other table doesn't, so it's
+# optional.
+_SPEEDYAPPLY_ROW_RE = re.compile(
+    r'^\|\s*<a href="[^"]*"><strong>(?P<company>[^<]+)</strong></a>\s*\|'
+    r"\s*(?P<title>[^|]+?)\s*\|"
+    r"\s*(?P<location>[^|]+?)\s*\|"
+    r"(?:\s*\$[^|]*\|)?"
+    r'\s*<a href="(?P<url>[^"]+)">.*?</a>\s*\|'
+    r"\s*(?P<age>[^|]+?)\s*\|",
+    re.MULTILINE,
+)
+
+
+def parse_speedyapply(text: str) -> list[Posting]:
+    postings = []
+    for match in _SPEEDYAPPLY_ROW_RE.finditer(text):
+        url = match.group("url").strip()
+        location = match.group("location").strip()
+        postings.append(
+            Posting(
+                source="speedyapply",
+                source_id=url,
+                company=match.group("company").strip(),
+                title=match.group("title").strip(),
+                url=url,
+                terms=[],
+                category=None,
+                degrees=[],
+                locations=[location] if location else [],
+                sponsorship=None,
+            )
+        )
+    return postings
+
+
+# | Company | Role | Posted | Applied | [Apply](url) |
+# Chieler re-aggregates Simplify, vanshb03, sndsh404, zshah101, Ashby and
+# Greenhouse boards into one README; cross-source dedupe (Posting.key) collapses
+# the overlap with our other sources, so the only net-new postings are from the
+# boards nobody else here covers.
+_CHIELER_ROW_RE = re.compile(
+    r"^\|\s*(?P<company>[^|]+?)\s*\|"
+    r"\s*(?P<title>[^|]+?)\s*\|"
+    r"\s*(?P<posted>[^|]+?)\s*\|"
+    r"\s*(?P<applied>[^|]+?)\s*\|"
+    r"\s*\[Apply\]\((?P<url>[^)]+)\)\s*\|",
+    re.MULTILINE,
+)
+
+
+def parse_chieler(text: str) -> list[Posting]:
+    postings = []
+    for match in _CHIELER_ROW_RE.finditer(text):
+        url = match.group("url").strip()
+        postings.append(
+            Posting(
+                source="chieler",
+                source_id=url,
+                company=match.group("company").strip(),
+                title=match.group("title").strip(),
+                url=url,
+                terms=[],
+                category=None,
+                degrees=[],
+                locations=[],
+                sponsorship=None,
+            )
+        )
+    return postings
+
+
+def parse_applyguy(text: str) -> list[Posting]:
+    payload = json.loads(text)
+    postings = []
+    for row in payload.get("jobs", []):
+        location = row.get("location") or ""
+        url = row.get("listingUrl") or row.get("url", "") or ""
+        postings.append(
+            Posting(
+                source="applyguy",
+                source_id=str(row.get("id", "")),
+                company=row.get("company", "") or "",
+                title=row.get("title", "") or "",
+                url=url,
+                terms=_clean_terms([row.get("season") or ""]),
+                category=row.get("category") or None,
+                degrees=[],
+                locations=[location] if location else [],
+                sponsorship=None,
+            )
+        )
+    return postings
+
+
 SOURCES: dict[str, tuple[str, Callable[[str], list[Posting]]]] = {
     "simplify": (SIMPLIFY_URL, parse_simplify),
     "zshah": (ZSHAH_URL, parse_zshah),
     "jobright": (JOBRIGHT_URL, parse_jobright),
+    "speedyapply": (SPEEDYAPPLY_URL, parse_speedyapply),
+    "chieler": (CHIELER_URL, parse_chieler),
+    "applyguy": (APPLYGUY_URL, parse_applyguy),
 }
 
 

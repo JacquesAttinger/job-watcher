@@ -1,4 +1,4 @@
-# Last edited: 2026-09-13 12:48 CDT
+# Last edited: 2026-09-18 21:10 CDT
 from watcher import sources
 
 
@@ -36,6 +36,38 @@ def test_jobright_table_rows(feed_text):
     assert copart.terms == [] and copart.category is None
 
 
+def test_speedyapply_rows_with_and_without_salary_column(feed_text):
+    postings = sources.parse_speedyapply(feed_text[sources.SPEEDYAPPLY_URL])
+    assert len(postings) == 3
+    tiktok = next(p for p in postings if p.company == "TikTok")
+    assert tiktok.title == "Software Engineer Intern - ML Infra - 2027 Summer"
+    assert tiktok.locations == ["San Jose, CA"]
+    assert tiktok.url == "https://lifeattiktok.com/search/7668584161852229893"
+    abridge = next(p for p in postings if p.company == "Abridge")  # no salary column
+    assert abridge.locations == ["San Francisco, CA"]
+    assert all(p.source == "speedyapply" for p in postings)
+
+
+def test_chieler_rows(feed_text):
+    postings = sources.parse_chieler(feed_text[sources.CHIELER_URL])
+    assert len(postings) == 3
+    qualcomm = next(p for p in postings if p.company == "Qualcomm")
+    assert qualcomm.title == "Low Power AI Software Development Intern"
+    assert qualcomm.url == "https://qualcomm.eightfold.ai/careers/job/446721143440"
+    assert all(p.source == "chieler" for p in postings)
+
+
+def test_applyguy_uses_listing_url_and_cleans_unstated_season(feed_text):
+    postings = sources.parse_applyguy(feed_text[sources.APPLYGUY_URL])
+    assert len(postings) == 2
+    applied = next(p for p in postings if p.company == "Applied Innovation")
+    assert applied.url == "https://appliedinnovation.applytojob.com/apply/DWiAHxQUJn"
+    assert applied.terms == []  # "Not specified" -> unstated
+    athene = next(p for p in postings if p.company == "Athene")
+    assert athene.terms == ["Summer 2027"]
+    assert all(p.source == "applyguy" for p in postings)
+
+
 def test_fetch_all_reports_failures_without_blocking(feed_text):
     def fetch(url):
         if url == sources.ZSHAH_URL:
@@ -45,6 +77,6 @@ def test_fetch_all_reports_failures_without_blocking(feed_text):
         return feed_text[url]
 
     postings, errors = sources.fetch_all(fetch)
-    assert {p.source for p in postings} == {"simplify"}
+    assert {p.source for p in postings} == {"simplify", "speedyapply", "chieler", "applyguy"}
     assert errors["zshah"].startswith("OSError")
     assert "0 postings" in errors["jobright"]

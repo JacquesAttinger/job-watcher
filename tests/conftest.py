@@ -1,4 +1,4 @@
-# Last edited: 2026-09-15 16:35 CDT
+# Last edited: 2026-09-18 21:10 CDT
 """Shared fixtures: sample feeds and an isolated state directory."""
 
 from __future__ import annotations
@@ -21,6 +21,9 @@ def feed_text() -> dict[str, str]:
         sources.SIMPLIFY_URL: (FIXTURES / "simplify_sample.json").read_text(),
         sources.ZSHAH_URL: (FIXTURES / "zshah_sample.json").read_text(),
         sources.JOBRIGHT_URL: (FIXTURES / "jobright_sample.md").read_text(),
+        sources.SPEEDYAPPLY_URL: (FIXTURES / "speedyapply_sample.md").read_text(),
+        sources.CHIELER_URL: (FIXTURES / "chieler_sample.md").read_text(),
+        sources.APPLYGUY_URL: (FIXTURES / "applyguy_sample.json").read_text(),
     }
 
 

@@ -1,8 +1,8 @@
-<!-- Last edited: 2026-09-13 12:48 CDT -->
+<!-- Last edited: 2026-09-18 21:10 CDT -->
 
 # job-watcher
 
-Once an hour, a Claude cloud routine checks three internship lists and pushes a notification to Jacques's phone for every new posting that fits.
+Once an hour, a Claude cloud routine checks six internship lists and pushes a notification to Jacques's phone for every new posting that fits.
 It runs in Anthropic's cloud on the Max subscription, so the Mac can be off, and it never bills per token.
 
 ## What it watches
@@ -12,6 +12,9 @@ It runs in Anthropic's cloud on the Max subscription, so the Mac can be off, and
 | SimplifyJobs/Summer2027-Internships | `.github/scripts/listings.json` |
 | zshah101/Automated-List-Of-Summer-2027-and-Fall-2026-Tech-Internships | `docs/api/jobs.json` |
 | jobright-ai/2026-Software-Engineer-Internship | `README.md` table |
+| speedyapply/2027-SWE-College-Jobs | `README.md` table |
+| Chieler/Summer-2027-SWE-Internships | `README.md` table (aggregates several boards; cross-source dedupe handles the overlap) |
+| ApplyGuy/2027-Internships | `data/internships.json` |
 
 ## How a run works
 

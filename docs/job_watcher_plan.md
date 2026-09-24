@@ -181,7 +181,7 @@ One check `job-watcher`, schedule type **cron** `23 0-6,12-23 * * *`, timezone *
 It is the same UTC cron the routine uses, so DST can never desync the two.
 Integration: ntfy → same topic.
 The overnight gap is part of the cron schedule, so no false alarms overnight.
-Ping URL: `https://hc-ping.com/072027a2-86b7-401c-9a61-7d3dff93f246`.
+Ping URL: stored as `HC_PING_URL` in the cloud environment / local `.env`, never committed here (the value committed before 2026-09-24 was rotated after being found in this file).
 
 ## Implementation steps
 

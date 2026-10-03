@@ -1,4 +1,4 @@
-<!-- Last edited: 2026-10-03 13:20 CDT -->
+<!-- Last edited: 2026-10-03 13:35 CDT -->
 
 <a id="readme-top"></a>
 
@@ -103,7 +103,7 @@ The full design, with each decision and the reason for it, is in [`docs/job_watc
 * [![Python][Python-badge]][Python-url] 3.11, standard library only, with no runtime dependencies to install or trust
 * [![Claude][Claude-badge]][Claude-url] cloud routine that decides for each posting and writes the alert text
 * [![ntfy][ntfy-badge]][ntfy-url] for push notifications
-* [healthchecks.io](https://healthchecks.io), a dead-man's switch that alerts you if an hourly run does not report
+* [![healthchecks.io][healthchecks-badge]][healthchecks-url] dead-man's switch that alerts you if an hourly run does not report
 * [![pytest][pytest-badge]][pytest-url] [![Ruff][Ruff-badge]][Ruff-url] [![pre-commit][pre-commit-badge]][pre-commit-url] for tests, lint, and format checks before each commit
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -223,15 +223,15 @@ Open an [issue](https://github.com/JacquesAttinger/job-watcher/issues/new?labels
    The pre-commit hook runs `ruff` and `pytest`.
 5. Push the branch and open a pull request.
 
-`docs/job_watcher_plan.md` explains how the existing sources are connected.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+[`docs/job_watcher_plan.md`](docs/job_watcher_plan.md) explains how the existing sources are connected.
 
 ### Top contributors:
 
 <a href="https://github.com/JacquesAttinger/job-watcher/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=JacquesAttinger/job-watcher" alt="contrib.rocks image" />
 </a>
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## License
 
@@ -278,3 +278,5 @@ Project Link: [https://github.com/JacquesAttinger/job-watcher](https://github.co
 [Ruff-url]: https://docs.astral.sh/ruff/
 [pre-commit-badge]: https://img.shields.io/badge/pre--commit-FAB040?style=for-the-badge&logo=precommit&logoColor=black
 [pre-commit-url]: https://pre-commit.com
+[healthchecks-badge]: https://img.shields.io/badge/healthchecks.io-1F2937?style=for-the-badge
+[healthchecks-url]: https://healthchecks.io

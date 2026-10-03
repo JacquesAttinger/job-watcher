@@ -1,4 +1,4 @@
-<!-- Last edited: 2026-10-03 13:35 CDT -->
+<!-- Last edited: 2026-10-03 14:15 CDT -->
 
 <a id="readme-top"></a>
 
@@ -10,6 +10,9 @@
 
 <br />
 <div align="center">
+  <a href="https://github.com/JacquesAttinger/job-watcher">
+    <img src="images/logo.png" alt="job-watcher logo: a radar sweep finding a new posting" width="80" height="80">
+  </a>
 
 <h3 align="center">job-watcher</h3>
 

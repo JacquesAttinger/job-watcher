@@ -278,5 +278,5 @@ Project Link: [https://github.com/JacquesAttinger/job-watcher](https://github.co
 [Ruff-url]: https://docs.astral.sh/ruff/
 [pre-commit-badge]: https://img.shields.io/badge/pre--commit-FAB040?style=for-the-badge&logo=precommit&logoColor=black
 [pre-commit-url]: https://pre-commit.com
-[healthchecks-badge]: https://img.shields.io/badge/healthchecks.io-1F2937?style=for-the-badge
+[healthchecks-badge]: https://img.shields.io/badge/healthchecks.io-64748B?style=for-the-badge
 [healthchecks-url]: https://healthchecks.io

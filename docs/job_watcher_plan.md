@@ -1,4 +1,4 @@
-<!-- Last edited: 2026-09-15 16:45 CDT -->
+<!-- Last edited: 2026-10-03 13:05 CDT -->
 
 # job-watcher — internship posting alerts on your phone
 
@@ -6,21 +6,20 @@
 
 Build a small robot that looks at three internship lists once an hour and sends a push notification to your phone when a new SWE or AI/ML internship appears.
 The robot runs in Anthropic's cloud as a Claude routine, so your Mac can be off.
-It uses only your Max subscription; when the subscription window is empty, it pauses and never bills by the token.
+It uses only your Claude subscription; when the subscription window is empty, it pauses and never bills by the token.
 A Python script does the heavy lifting (download, compare, filter); Claude only makes the final "is this really a software internship?" call and writes the alert text.
-For zero2sudo's stories you do not need a robot: Instagram's own "story notifications" bell already pushes to your phone the moment he posts.
 
 ## Context
 
 Jacques is in an SWE internship search for Summer 2027 (B.S. Math + CS, UChicago, expected Jun 2028).
-Idea #6 in `SWE_Networking/outreach_automation_ideas.md` names this exact project: a job-posting watcher with same-day alerting, because applying in the first 24–48 hours matters.
+The goal is a job-posting watcher with same-day alerting, because applying in the first 24–48 hours matters.
 The original ask was "a Claude session always open, checking every 10 minutes."
-The interview replaced that with a cloud routine because Mac-off operation mattered more than the 10-minute cadence, and because a Claude session per poll would burn the Max window.
+The interview replaced that with a cloud routine because Mac-off operation mattered more than the 10-minute cadence, and because a Claude session per poll would burn the subscription window.
 
 ### Hard constraint
 
 No API usage-based billing, ever.
-Only the Max subscription.
+Only the Claude subscription.
 When the window is used up, the watcher must stop, not fall back to metered billing.
 Verified against the routines docs: "Routines draw down subscription usage the same way interactive sessions do" and "Without usage credits, additional runs are rejected until the window resets."
 Jacques must leave **usage credits OFF** at claude.ai/settings/usage.
@@ -30,16 +29,15 @@ Jacques must leave **usage credits OFF** at claude.ai/settings/usage.
 | # | Decision | Choice |
 |---|---|---|
 | 1 | Runtime | Cloud routine, hourly (cloud minimum is 1 hour) |
-| 2 | Instagram | No automation. Turn on the story-notifications bell on zero2sudo's profile |
-| 3 | Alert channel | ntfy.sh push, long random topic name |
-| 4 | Filter | Summer 2027, Fall 2026, Winter 2027 (co-ops included), or term unstated. Software / AI-ML / security-adjacent. Bachelor's-eligible. US or remote. Drop quant, hardware, product, analyst |
-| 5 | Alert shape | One push per posting, cap 8 per run, then one "and N more" push |
-| 6 | State repo | New private repo `JacquesAttinger/job-watcher`; state commits to `main` |
-| 7 | Schedule | Hourly, 7am–1am America/Chicago (19 runs/day) |
-| 8 | Failure handling | Per-source error push (max once/day/source) + healthchecks.io dead-man switch → ntfy |
-| 9 | Model | Sonnet 5 |
-| 10 | Bootstrap | First run seeds `seen.json` silently and sends one "armed" push |
-| 11 | Scope | Alerts + cumulative `alerts.csv`. No resume tailoring (follow-up) |
+| 2 | Alert channel | ntfy.sh push, long random topic name |
+| 3 | Filter | Summer 2027, Fall 2026, Winter 2027 (co-ops included), or term unstated. Software / AI-ML / security-adjacent. Bachelor's-eligible. US or remote. Drop quant, hardware, product, analyst |
+| 4 | Alert shape | One push per posting, cap 8 per run, then one "and N more" push |
+| 5 | State repo | New private repo `JacquesAttinger/job-watcher`; state commits to `main` |
+| 6 | Schedule | Hourly, 7am–1am America/Chicago (19 runs/day) |
+| 7 | Failure handling | Per-source error push (max once/day/source) + healthchecks.io dead-man switch → ntfy |
+| 8 | Model | Sonnet 5 |
+| 9 | Bootstrap | First run seeds `seen.json` silently and sends one "armed" push |
+| 10 | Scope | Alerts + cumulative `alerts.csv`. No resume tailoring (follow-up) |
 | — | Connectors | None attached to the routine (least privilege) |
 
 ## Facts that shape the design (checked 2026-09-13)
@@ -69,7 +67,7 @@ The three sources overlap heavily, so cross-source dedupe is required.
 - Push to `main` is allowed when the branch is unprotected and every commit is Jacques's (docs: routines § Repositories and branch permissions).
 - Environment variables are readable by anyone who uses the environment; on a personal account that is only Jacques.
 - Only `ntfy.sh` and `hc-ping.com` need adding to the environment's allowed domains.
-- Account: `claude auth status` → personal org, `subscriptionType: max`. No routines exist yet.
+- Account: personal org on a Claude subscription. No routines exist yet.
 - Daily routine run cap is shown at claude.ai/code/routines; it must be ≥ 19. Check before creating the schedule.
 - Mac timezone is CDT, so "local" in the CLI already means Central.
 
@@ -167,7 +165,7 @@ Any other HTTP error, or a 429 that survives every retry, still raises, so `send
 - Repo: `JacquesAttinger/job-watcher`, default branch `main`.
 - Environment: new cloud environment `job-watcher`, network **Custom** with `ntfy.sh` and `hc-ping.com`, **Also include default list** checked. Environment variables `NTFY_TOPIC`, `HC_PING_URL`.
 - Model: Sonnet 5. Connectors: none.
-- Schedule: cron `23 0-6,12-23 * * *` **UTC** = 7:23am–1:23am Central during CDT (6:23am–12:23am during CST). Routine id `trig_01LMatVbuiXQhSxWRr54FC9w`, environment `env_01YGdptcimZebJ5wbBCqfEq6`.
+- Schedule: cron `23 0-6,12-23 * * *` **UTC** = 7:23am–1:23am Central during CDT (6:23am–12:23am during CST).
 - Prompt (`routine/PROMPT.md`, self-contained):
   1. If the `routine-fire-payload` block contains the word `test`, run `python -m watcher.cli test` and stop.
   2. Run `python -m watcher.cli scan`.
@@ -198,9 +196,8 @@ Ping URL: stored as `HC_PING_URL` in the cloud environment / local `.env`, never
 11. Force a real alert: delete one recent software key from `seen.json`, commit, **Run now** → exactly one posting alert arrives with a working click URL.
 12. Let the schedule run for a day. Check `runs/` and `alerts.csv`, adjust exclusions if noise appears.
 
-## Manual setup for Jacques (5–10 minutes total)
+## Manual setup (5–10 minutes total)
 
-- Instagram: zero2sudo profile → bell icon (or Following → Notifications) → Stories on. Make sure Instagram push is allowed on the phone.
 - ntfy: install the ntfy app, subscribe to a topic like `jacques-jobs-<20 random chars>`. Send me the topic.
 - healthchecks.io: free account, create the check as described, add the ntfy integration, send me the ping URL.
 - claude.ai/settings/usage: confirm **usage credits are OFF**.
@@ -218,6 +215,5 @@ Ping URL: stored as `HC_PING_URL` in the cloud environment / local `.env`, never
 
 ## Out of scope (follow-ups)
 
-- Auto-tailored resume per posting (outreach idea #7).
-- Any Instagram automation.
+- Auto-tailored resume per posting.
 - 10-minute cadence (would need a Mac-on runner; revisit only if hourly proves too slow).
